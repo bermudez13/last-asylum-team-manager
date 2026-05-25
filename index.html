@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Last Asylum Team Manager</title>
+    <link rel="stylesheet" href="./assets/css/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="app-header">
+        <h1>Last Asylum Team Manager</h1>
+        <p>Canyon Conquest army organizer</p>
+      </header>
+
+      <section class="card">
+        <h2>Upload CSV</h2>
+        <p class="hint">CSV format: MemberName, TeamMight</p>
+
+        <label for="csvFileInput" class="file-label">Choose CSV file</label>
+        <input type="file" id="csvFileInput" accept=".csv" />
+
+        <div class="actions">
+          <button id="clearBtn" type="button">Clear</button>
+        </div>
+      </section>
+      <section class="card logic-card">
+        <h2>Army Selection Logic</h2>
+        <p>
+          The app ranks all players by <strong>Team Might</strong> from highest
+          to lowest. The top 45 players are selected for battle. Ranks 1–30 are
+          split between <strong>Army 1</strong> and
+          <strong>Army 2</strong> using a balanced pattern, while ranks 31–45
+          are assigned to <strong>Army 3</strong>. Any player ranked 46 or lower
+          is marked as <strong>Backup</strong>.
+        </p>
+
+        <p>
+          The goal is to create two strong armies to compete for two flags,
+          while the third army uses the weakest 15 players from the selected top
+          45.
+        </p>
+      </section>
+
+      <section class="summary-grid">
+        <div class="summary-card">
+          <span>Total Players</span>
+          <strong id="totalPlayers">0</strong>
+        </div>
+
+        <div class="summary-card">
+          <span>Selected Top 45</span>
+          <strong id="selectedPlayers">0</strong>
+        </div>
+
+        <div class="summary-card">
+          <span>Backups</span>
+          <strong id="backupPlayers">0</strong>
+        </div>
+
+        <div class="summary-card">
+          <span>Army 1 Might</span>
+          <strong id="army1Might">0</strong>
+        </div>
+
+        <div class="summary-card">
+          <span>Army 2 Might</span>
+          <strong id="army2Might">0</strong>
+        </div>
+
+        <div class="summary-card">
+          <span>Army 3 Might</span>
+          <strong id="army3Might">0</strong>
+        </div>
+      </section>
+
+      <section class="army-list-grid">
+        <div class="card army-list-card">
+          <h2>Army 1 Members</h2>
+          <ol id="army1List" class="army-list">
+            <li class="empty-list">Upload a CSV file to begin.</li>
+          </ol>
+        </div>
+
+        <div class="card army-list-card">
+          <h2>Army 2 Members</h2>
+          <ol id="army2List" class="army-list">
+            <li class="empty-list">Upload a CSV file to begin.</li>
+          </ol>
+        </div>
+
+        <div class="card army-list-card">
+          <h2>Army 3 Members</h2>
+          <ol id="army3List" class="army-list">
+            <li class="empty-list">Upload a CSV file to begin.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Ranking</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Member Name</th>
+                <th>Team Might</th>
+                <th>Army</th>
+              </tr>
+            </thead>
+            <tbody id="rankingTableBody">
+              <tr>
+                <td colspan="4" class="empty">Upload a CSV file to begin.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="./assets/js/main.js"></script>
+  </body>
+</html>
