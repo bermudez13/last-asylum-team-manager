@@ -14,8 +14,16 @@ const army1ListEl = document.getElementById("army1List");
 const army2ListEl = document.getElementById("army2List");
 const army3ListEl = document.getElementById("army3List");
 
+const armyStrategyInputs = document.querySelectorAll('input[name="armyStrategy"]');
+
+let currentPlayers = [];
+
 csvFileInput.addEventListener("change", handleCSVUpload);
 clearBtn.addEventListener("click", clearApp);
+
+armyStrategyInputs.forEach((input) => {
+  input.addEventListener("change", rerenderWithCurrentStrategy);
+});
 
 function handleCSVUpload(event) {
   const file = event.target.files[0];
@@ -27,11 +35,10 @@ function handleCSVUpload(event) {
   reader.onload = function (e) {
     const csvText = e.target.result;
     const players = parseCSV(csvText);
-    const rankedPlayers = rankPlayers(players);
 
-    renderSummary(rankedPlayers);
-renderArmyLists(rankedPlayers);
-renderRankingTable(rankedPlayers);
+    currentPlayers = players;
+
+    rerenderWithCurrentStrategy();
   };
 
   reader.readAsText(file);
@@ -40,12 +47,12 @@ renderRankingTable(rankedPlayers);
 function parseCSV(csvText) {
   const lines = csvText
     .split(/\r?\n/)
-    .map(line => line.trim())
-    .filter(line => line.length > 0);
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
 
   const dataLines = lines.slice(1);
 
-  const players = dataLines.map(line => {
+  const players = dataLines.map((line) => {
     const columns = line.split(",");
 
     const memberName = columns[0]?.trim();
@@ -53,18 +60,19 @@ function parseCSV(csvText) {
 
     return {
       memberName,
-      teamMight
+      teamMight,
     };
   });
 
-  return removeDuplicates(players)
-    .filter(player => player.memberName && !Number.isNaN(player.teamMight));
+  return removeDuplicates(players).filter(
+    (player) => player.memberName && !Number.isNaN(player.teamMight),
+  );
 }
 
 function removeDuplicates(players) {
   const uniquePlayers = new Map();
 
-  players.forEach(player => {
+  players.forEach((player) => {
     const key = player.memberName.toLowerCase();
 
     if (!uniquePlayers.has(key)) {
@@ -82,8 +90,30 @@ function removeDuplicates(players) {
   return Array.from(uniquePlayers.values());
 }
 
-function rankPlayers(players) {
-  return players
+function getSelectedStrategy() {
+  const selectedInput = document.querySelector(
+    'input[name="armyStrategy"]:checked',
+  );
+
+  return selectedInput ? selectedInput.value : "balanced";
+}
+
+function rerenderWithCurrentStrategy() {
+  if (currentPlayers.length === 0) {
+    clearResultsOnly();
+    return;
+  }
+
+  const selectedStrategy = getSelectedStrategy();
+  const rankedPlayers = rankPlayers(currentPlayers, selectedStrategy);
+
+  renderSummary(rankedPlayers);
+  renderArmyLists(rankedPlayers);
+  renderRankingTable(rankedPlayers);
+}
+
+function rankPlayers(players, strategy = "balanced") {
+  return [...players]
     .sort((a, b) => b.teamMight - a.teamMight)
     .map((player, index) => {
       const rank = index + 1;
@@ -92,14 +122,19 @@ function rankPlayers(players) {
         rank,
         memberName: player.memberName,
         teamMight: player.teamMight,
-        army: assignArmy(rank)
+        army: assignArmy(rank, strategy),
       };
     });
 }
 
-function assignArmy(rank) {
+function assignArmy(rank, strategy = "balanced") {
   if (rank > 45) return "Backup";
   if (rank > 30) return "Army 3";
+
+  if (strategy === "sequential") {
+    if (rank <= 15) return "Army 1";
+    return "Army 2";
+  }
 
   if (rank % 4 === 1 || rank % 4 === 0) {
     return "Army 1";
@@ -110,8 +145,8 @@ function assignArmy(rank) {
 
 function renderSummary(players) {
   const totalPlayers = players.length;
-  const selectedPlayers = players.filter(player => player.rank <= 45).length;
-  const backupPlayers = players.filter(player => player.rank > 45).length;
+  const selectedPlayers = players.filter((player) => player.rank <= 45).length;
+  const backupPlayers = players.filter((player) => player.rank > 45).length;
 
   const army1Might = getArmyTotalMight(players, "Army 1");
   const army2Might = getArmyTotalMight(players, "Army 2");
@@ -128,8 +163,27 @@ function renderSummary(players) {
 
 function getArmyTotalMight(players, armyName) {
   return players
-    .filter(player => player.army === armyName)
+    .filter((player) => player.army === armyName)
     .reduce((total, player) => total + player.teamMight, 0);
+}
+
+function renderArmyLists(players) {
+  renderSingleArmyList(players, "Army 1", army1ListEl);
+  renderSingleArmyList(players, "Army 2", army2ListEl);
+  renderSingleArmyList(players, "Army 3", army3ListEl);
+}
+
+function renderSingleArmyList(players, armyName, listElement) {
+  const armyPlayers = players.filter((player) => player.army === armyName);
+
+  if (armyPlayers.length === 0) {
+    listElement.innerHTML = `<li class="empty-list">No players yet.</li>`;
+    return;
+  }
+
+  listElement.innerHTML = armyPlayers
+    .map((player) => `<li>${player.memberName}</li>`)
+    .join("");
 }
 
 function renderRankingTable(players) {
@@ -142,14 +196,18 @@ function renderRankingTable(players) {
     return;
   }
 
-  rankingTableBody.innerHTML = players.map(player => `
-    <tr>
-      <td>${player.rank}</td>
-      <td>${player.memberName}</td>
-      <td>${formatNumber(player.teamMight)}</td>
-      <td class="${getArmyClass(player.army)}">${player.army}</td>
-    </tr>
-  `).join("");
+  rankingTableBody.innerHTML = players
+    .map(
+      (player) => `
+        <tr>
+          <td>${player.rank}</td>
+          <td>${player.memberName}</td>
+          <td>${formatNumber(player.teamMight)}</td>
+          <td><span class="${getArmyClass(player.army)}">${player.army}</span></td>
+        </tr>
+      `,
+    )
+    .join("");
 }
 
 function getArmyClass(army) {
@@ -163,39 +221,24 @@ function formatNumber(number) {
   return number.toLocaleString("en-US");
 }
 
-function renderArmyLists(players) {
-  renderSingleArmyList(players, "Army 1", army1ListEl);
-  renderSingleArmyList(players, "Army 2", army2ListEl);
-  renderSingleArmyList(players, "Army 3", army3ListEl);
-}
-
-function renderSingleArmyList(players, armyName, listElement) {
-  const armyPlayers = players.filter(player => player.army === armyName);
-
-  if (armyPlayers.length === 0) {
-    listElement.innerHTML = `<li class="empty-list">No players yet.</li>`;
-    return;
-  }
-
-  listElement.innerHTML = armyPlayers
-    .map(player => `<li>${player.memberName}</li>`)
-    .join("");
-}
-
 function clearApp() {
+  currentPlayers = [];
   csvFileInput.value = "";
+  clearResultsOnly();
+}
 
+function clearResultsOnly() {
   totalPlayersEl.textContent = "0";
   selectedPlayersEl.textContent = "0";
   backupPlayersEl.textContent = "0";
 
   army1MightEl.textContent = "0";
-army2MightEl.textContent = "0";
-army3MightEl.textContent = "0";
+  army2MightEl.textContent = "0";
+  army3MightEl.textContent = "0";
 
-army1ListEl.innerHTML = `<li class="empty-list">Upload a CSV file to begin.</li>`;
-army2ListEl.innerHTML = `<li class="empty-list">Upload a CSV file to begin.</li>`;
-army3ListEl.innerHTML = `<li class="empty-list">Upload a CSV file to begin.</li>`;
+  army1ListEl.innerHTML = `<li class="empty-list">Upload a CSV file to begin.</li>`;
+  army2ListEl.innerHTML = `<li class="empty-list">Upload a CSV file to begin.</li>`;
+  army3ListEl.innerHTML = `<li class="empty-list">Upload a CSV file to begin.</li>`;
 
   rankingTableBody.innerHTML = `
     <tr>

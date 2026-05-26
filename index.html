@@ -42,6 +42,51 @@
         </p>
       </section>
 
+      <section class="card strategy-card">
+        <h2>Army Organization Strategy</h2>
+
+        <p class="strategy-description">
+          Balanced mode is recommended because Canyon Conquest is won by taking
+          2 out of 3 flags. Instead of concentrating all power into one army,
+          this strategy spreads the top 30 players between Army 1 and Army 2 to
+          reduce overkill and increase the chance of winning two lanes. Army 3
+          receives ranks 31–45 as the weaker support army.
+        </p>
+
+        <div class="strategy-options">
+          <label class="strategy-option" for="strategyBalanced">
+            <input
+              type="radio"
+              id="strategyBalanced"
+              name="armyStrategy"
+              value="balanced"
+              aria-label="Balanced Army 1 and Army 2 strategy"
+              checked
+            />
+            <span>
+              <strong>Balanced Army 1 &amp; Army 2</strong>
+              <small
+                >Ranks 1–30 are split evenly between Army 1 and Army 2.</small
+              >
+            </span>
+          </label>
+
+          <label class="strategy-option" for="strategySequential">
+            <input
+              type="radio"
+              id="strategySequential"
+              name="armyStrategy"
+              value="sequential"
+              aria-label="Sequential strongest first strategy"
+            />
+            <span>
+              <strong>Sequential Strongest First</strong>
+              <small>Ranks 1–15 go to Army 1, ranks 16–30 go to Army 2.</small>
+            </span>
+          </label>
+        </div>
+      </section>
+
       <section class="summary-grid">
         <div class="summary-card">
           <span>Total Players</span>
